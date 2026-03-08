@@ -1,6 +1,6 @@
 "use client"
 
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { Suspense } from "react"
 import type { DashboardData } from "../types"
 import { TrendChart } from "./TrendChart"
@@ -83,12 +83,12 @@ function Label({ children }: { children: React.ReactNode }) {
   )
 }
 
-function Big({ children }: { children: React.ReactNode }) {
-  return <p style={{ fontSize: "28px", fontWeight: 600, letterSpacing: "-0.02em", color: C.text, margin: 0 }}>{children}</p>
+function Big({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
+  return <p style={{ fontSize: "28px", fontWeight: 600, letterSpacing: "-0.02em", color: C.text, margin: 0, ...style }}>{children}</p>
 }
 
-function Sub({ children }: { children: React.ReactNode }) {
-  return <p style={{ fontSize: "12px", color: C.muted, margin: "4px 0 0" }}>{children}</p>
+function Sub({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
+  return <p style={{ fontSize: "12px", color: C.muted, margin: "4px 0 0", ...style }}>{children}</p>
 }
 
 // ── Range toggle ──────────────────────────────────────────────────────────────
