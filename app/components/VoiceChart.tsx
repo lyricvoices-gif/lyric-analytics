@@ -1,82 +1,153 @@
 "use client"
 
-import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, Cell,
-} from "recharts"
 import type { DashboardData } from "../types"
 
 const C = {
   brand: "#B8955A",
-  muted: "rgba(248,246,243,0.35)",
-  gridLine: "rgba(255,255,255,0.05)",
-  tooltipBg: "#1e1c1a",
-  tooltipBorder: "rgba(255,255,255,0.08)",
+  text: "#f5f3f0",
+  muted: "rgba(245,243,240,0.4)",
+  faint: "rgba(245,243,240,0.07)",
+  border: "rgba(255,255,255,0.07)",
 }
 
-export function VoiceChart({ data }: { data: DashboardData["voices"] }) {
+function fmtNum(n: number | string | undefined | null): string {
+  if (n == null) return "—"
+  return Number(n).toLocaleString()
+}
+
+function fmtAudio(s: number | string | undefined | null): string {
+  if (!s) return "—"
+  const sec = Number(s)
+  if (sec < 60) return `${sec.toFixed(1)}s`
+  return `${Math.floor(sec / 60)}m ${Math.round(sec % 60)}s`
+}
+
+export function VoiceChart({
+  data,
+  variants,
+}: {
+  data: DashboardData["voices"]
+  variants: DashboardData["variants"]
+}) {
   if (!data || data.length === 0) {
-    return <p style={{ color: C.muted, fontSize: "12px", margin: "24px 0 0" }}>No voice data yet.</p>
+    return (
+      <div style={{ padding: "48px 0", textAlign: "center" }}>
+        <p style={{ fontSize: "12px", color: C.muted, letterSpacing: "0.02em" }}>
+          No voice data yet — generate something in the composer.
+        </p>
+      </div>
+    )
   }
 
-  const formatted = data.map((v) => ({
-    name: v.voice_id,
-    generations: Number(v.generations),
-    downloads: Number(v.downloads),
-    unique_users: Number(v.unique_users),
-  }))
+  const maxGen = Math.max(...data.map((v) => Number(v.generations)), 1)
 
-  const maxVal = Math.max(...formatted.map((v) => v.generations), 1)
+  const variantsByVoice: Record<string, Array<{ variant: string; generations: number }>> = {}
+  for (const v of variants) {
+    if (!variantsByVoice[v.voice_id]) variantsByVoice[v.voice_id] = []
+    variantsByVoice[v.voice_id].push({ variant: v.voice_variant, generations: Number(v.generations) })
+  }
 
   return (
-    <>
-      <ResponsiveContainer width="100%" height={200}>
-        <BarChart data={formatted} margin={{ top: 8, right: 16, left: -8, bottom: 0 }} barSize={28}>
-          <CartesianGrid strokeDasharray="3 3" stroke={C.gridLine} vertical={false} />
-          <XAxis
-            dataKey="name"
-            tick={{ fontSize: 11, fill: C.muted }}
-            axisLine={false}
-            tickLine={false}
-          />
-          <YAxis
-            tick={{ fontSize: 11, fill: C.muted }}
-            axisLine={false}
-            tickLine={false}
-          />
-          <Tooltip
-            contentStyle={{ background: C.tooltipBg, border: `1px solid ${C.tooltipBorder}`, borderRadius: "10px", fontSize: "12px" }}
-            labelStyle={{ color: "#faf9f7", marginBottom: "4px" }}
-            cursor={{ fill: "rgba(255,255,255,0.04)" }}
-          />
-          <Bar dataKey="generations" radius={[4, 4, 0, 0]}>
-            {formatted.map((entry, i) => (
-              <Cell
-                key={i}
-                fill={`rgba(184,149,90,${0.4 + 0.6 * (entry.generations / maxVal)})`}
-              />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "12px" }}>
+      {data.map((voice) => {
+        const gen = Number(voice.generations)
+        const dl = Number(voice.downloads)
+        const users = Number(voice.unique_users)
+        const share = gen / maxGen
+        const vVariants = (variantsByVoice[voice.voice_id] ?? []).sort((a, b) => b.generations - a.generations)
+        const variantTotal = vVariants.reduce((a, b) => a + b.generations, 0) || 1
 
-      {/* Stats row under chart */}
-      <div style={{ display: "flex", gap: "4px", marginTop: "12px", flexWrap: "wrap" }}>
-        {data.map((v) => (
-          <div key={v.voice_id} style={{
-            flex: "1", minWidth: "100px",
-            background: "rgba(255,255,255,0.04)", borderRadius: "8px", padding: "8px 12px",
-          }}>
-            <p style={{ fontSize: "11px", fontWeight: 600, color: "#faf9f7", margin: "0 0 4px", textTransform: "capitalize" }}>
-              {v.voice_id}
+        return (
+          <div
+            key={voice.voice_id}
+            style={{
+              background: C.faint,
+              border: `1px solid ${C.border}`,
+              borderRadius: "14px",
+              padding: "22px 20px",
+              position: "relative",
+              overflow: "hidden",
+            }}
+          >
+            {/* Top accent */}
+            <div style={{
+              position: "absolute",
+              top: 0, left: 0, right: 0,
+              height: "2px",
+              background: `linear-gradient(90deg, rgba(184,149,90,${0.25 + 0.75 * share}), transparent 80%)`,
+            }} />
+
+            <p style={{
+              fontSize: "10px", fontWeight: 700, letterSpacing: "0.16em",
+              color: C.brand, textTransform: "uppercase", margin: "0 0 14px",
+            }}>
+              {voice.voice_id}
             </p>
-            <p style={{ fontSize: "10px", color: C.muted, margin: 0, lineHeight: 1.7 }}>
-              {v.generations} gen · {v.downloads} dl<br />
-              {v.unique_users} users · {v.avg_audio_s ? `${v.avg_audio_s}s avg` : "—"}
+
+            <p style={{
+              fontSize: "34px", fontWeight: 300, letterSpacing: "-0.03em",
+              color: C.text, margin: "0 0 2px", lineHeight: 1,
+            }}>
+              {fmtNum(gen)}
             </p>
+            <p style={{
+              fontSize: "10px", color: C.muted, margin: "0 0 14px",
+              textTransform: "uppercase", letterSpacing: "0.1em",
+            }}>
+              generations
+            </p>
+
+            <div style={{ height: "2px", background: "rgba(255,255,255,0.06)", borderRadius: "1px", marginBottom: "18px" }}>
+              <div style={{
+                height: "100%", width: `${share * 100}%`,
+                background: C.brand, borderRadius: "1px", opacity: 0.55,
+                transition: "width 0.5s ease",
+              }} />
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "12px", marginBottom: vVariants.length ? "18px" : 0 }}>
+              {([
+                ["Downloads", fmtNum(dl)],
+                ["Users", fmtNum(users)],
+                ["Avg Audio", fmtAudio(voice.avg_audio_s)],
+              ] as [string, string][]).map(([label, val]) => (
+                <div key={label}>
+                  <p style={{ fontSize: "14px", fontWeight: 500, color: C.text, margin: "0 0 3px" }}>{val}</p>
+                  <p style={{ fontSize: "10px", color: C.muted, margin: 0, letterSpacing: "0.04em" }}>{label}</p>
+                </div>
+              ))}
+            </div>
+
+            {vVariants.length > 0 && (
+              <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "14px" }}>
+                <p style={{
+                  fontSize: "9px", fontWeight: 700, color: C.muted,
+                  textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 8px",
+                }}>
+                  Variants
+                </p>
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                  {vVariants.slice(0, 4).map((v) => (
+                    <div key={v.variant}>
+                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", marginBottom: "3px" }}>
+                        <span style={{ color: C.muted }}>{v.variant}</span>
+                        <span style={{ color: C.text, fontWeight: 500 }}>{v.generations}</span>
+                      </div>
+                      <div style={{ height: "2px", background: "rgba(255,255,255,0.06)", borderRadius: "1px" }}>
+                        <div style={{
+                          height: "100%",
+                          width: `${(v.generations / variantTotal) * 100}%`,
+                          background: C.brand, borderRadius: "1px", opacity: 0.45,
+                        }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
-        ))}
-      </div>
-    </>
+        )
+      })}
+    </div>
   )
 }

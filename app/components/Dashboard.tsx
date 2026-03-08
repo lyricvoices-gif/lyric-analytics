@@ -7,23 +7,26 @@ import { TrendChart } from "./TrendChart"
 import { VoiceChart } from "./VoiceChart"
 import { EmotionalChart } from "./EmotionalChart"
 
-// ── Tokens ────────────────────────────────────────────────────────────────────
+// ── Tokens ─────────────────────────────────────────────────────────────────────
 
 const C = {
-  bg: "#12100f",
-  card: "#1e1c1a",
+  bg: "#0d0b0a",
+  card: "#181614",
   cardBorder: "rgba(255,255,255,0.07)",
+  cardBorderStrong: "rgba(255,255,255,0.11)",
   brand: "#B8955A",
-  brandMuted: "rgba(184,149,90,0.3)",
-  text: "#faf9f7",
-  muted: "rgba(248,246,243,0.45)",
-  subtle: "rgba(248,246,243,0.12)",
+  brandDim: "rgba(184,149,90,0.12)",
+  brandMid: "rgba(184,149,90,0.45)",
+  text: "#f5f3f0",
+  muted: "rgba(245,243,240,0.4)",
+  faint: "rgba(245,243,240,0.07)",
+  divider: "rgba(255,255,255,0.06)",
   error: "#c4722a",
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// ── Helpers ────────────────────────────────────────────────────────────────────
 
-function fmtAudio(seconds: number): string {
+function fmtAudio(seconds: number | undefined | null): string {
   if (!seconds) return "—"
   const h = Math.floor(seconds / 3600)
   const m = Math.floor((seconds % 3600) / 60)
@@ -33,9 +36,9 @@ function fmtAudio(seconds: number): string {
   return `${s}s`
 }
 
-function fmtNum(n: number | undefined | null): string {
+function fmtNum(n: number | string | undefined | null): string {
   if (n == null) return "—"
-  return n.toLocaleString()
+  return Number(n).toLocaleString()
 }
 
 function fmtMs(ms: number | undefined | null): string {
@@ -58,56 +61,50 @@ function timeAgo(iso: string): string {
   return `${Math.floor(h / 24)}d ago`
 }
 
-function eventLabel(type: string): string {
-  return type.replace("customer.subscription.", "").replace("_", " ")
-}
-
-// ── Card ──────────────────────────────────────────────────────────────────────
+// ── Primitives ─────────────────────────────────────────────────────────────────
 
 function Card({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
   return (
     <div style={{
-      background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: "14px",
-      padding: "20px 24px", ...style,
+      background: C.card,
+      border: `1px solid ${C.cardBorder}`,
+      borderRadius: "16px",
+      padding: "24px 28px",
+      ...style,
     }}>
       {children}
     </div>
   )
 }
 
-function Label({ children }: { children: React.ReactNode }) {
+function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.14em", color: C.muted, textTransform: "uppercase", margin: "0 0 8px" }}>
+    <p style={{
+      fontSize: "9px", fontWeight: 700, letterSpacing: "0.2em",
+      color: C.muted, textTransform: "uppercase", margin: "0 0 20px",
+    }}>
       {children}
     </p>
   )
 }
 
-function Big({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
-  return <p style={{ fontSize: "28px", fontWeight: 600, letterSpacing: "-0.02em", color: C.text, margin: 0, ...style }}>{children}</p>
-}
-
-function Sub({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
-  return <p style={{ fontSize: "12px", color: C.muted, margin: "4px 0 0", ...style }}>{children}</p>
-}
-
-// ── Range toggle ──────────────────────────────────────────────────────────────
+// ── Range toggle ───────────────────────────────────────────────────────────────
 
 function RangeToggle({ current }: { current: number }) {
   const router = useRouter()
-  const options = [7, 30, 90]
   return (
-    <div style={{ display: "flex", gap: "4px", background: C.subtle, borderRadius: "8px", padding: "3px" }}>
-      {options.map((n) => (
+    <div style={{ display: "flex", gap: "2px", background: "rgba(255,255,255,0.06)", borderRadius: "9px", padding: "3px" }}>
+      {[7, 30, 90].map((n) => (
         <button
           key={n}
           onClick={() => router.push(`/?range=${n}`)}
           style={{
-            padding: "4px 12px", borderRadius: "6px", border: "none",
+            padding: "5px 14px", borderRadius: "7px", border: "none",
             background: n === current ? C.card : "transparent",
+            boxShadow: n === current ? `0 0 0 1px ${C.cardBorder}` : "none",
             color: n === current ? C.text : C.muted,
             fontSize: "12px", fontWeight: n === current ? 500 : 400,
-            cursor: "pointer", transition: "all 0.12s",
+            cursor: "pointer", transition: "all 0.15s ease",
           }}
         >
           {n}d
@@ -117,36 +114,77 @@ function RangeToggle({ current }: { current: number }) {
   )
 }
 
-// ── Overview bar ──────────────────────────────────────────────────────────────
+// ── Overview ───────────────────────────────────────────────────────────────────
 
-function OverviewBar({ data }: { data: DashboardData }) {
-  const { overview, latency } = data
-  const stats = [
-    { label: "Generations", value: fmtNum(overview.total_generations) },
-    { label: "Downloads", value: fmtNum(overview.total_downloads) },
-    { label: "Previews", value: fmtNum(overview.total_previews) },
-    { label: "Unique Users", value: fmtNum(overview.unique_users) },
-    { label: "Audio Generated", value: fmtAudio(overview.total_audio_seconds) },
-    { label: "Median Gen Time", value: fmtMs(latency.p50_ms) },
-  ]
+function StatCard({
+  label,
+  value,
+  sub,
+  accent,
+  large,
+}: {
+  label: string
+  value: string
+  sub?: string
+  accent?: boolean
+  large?: boolean
+}) {
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: "12px" }}>
-      {stats.map(({ label, value }) => (
-        <Card key={label}>
-          <Label>{label}</Label>
-          <Big>{value}</Big>
-        </Card>
-      ))}
+    <Card style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", minHeight: large ? "120px" : "100px" }}>
+      <p style={{
+        fontSize: "9px", fontWeight: 700, letterSpacing: "0.18em",
+        color: C.muted, textTransform: "uppercase", margin: 0,
+      }}>
+        {label}
+      </p>
+      <div>
+        <p style={{
+          fontSize: large ? "44px" : "28px",
+          fontWeight: large ? 300 : 500,
+          letterSpacing: large ? "-0.04em" : "-0.02em",
+          color: accent ? C.brand : C.text,
+          margin: 0, lineHeight: 1,
+        }}>
+          {value}
+        </p>
+        {sub && <p style={{ fontSize: "11px", color: C.muted, margin: "6px 0 0" }}>{sub}</p>}
+      </div>
+    </Card>
+  )
+}
+
+function OverviewSection({ data }: { data: DashboardData }) {
+  const { overview, latency, stripe } = data
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+      {/* Primary row */}
+      <div style={{ display: "grid", gridTemplateColumns: "1.6fr 1fr 1fr", gap: "10px" }}>
+        <StatCard label="Generations" value={fmtNum(overview.total_generations)} large accent={false} />
+        <StatCard label="Downloads" value={fmtNum(overview.total_downloads)} />
+        <StatCard label="Unique Users" value={fmtNum(overview.unique_users)} />
+      </div>
+      {/* Secondary row */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px" }}>
+        <StatCard label="Audio Generated" value={fmtAudio(overview.total_audio_seconds)} />
+        <StatCard label="Median Latency" value={fmtMs(latency.p50_ms)} sub={latency.p95_ms ? `p95 ${fmtMs(latency.p95_ms)}` : undefined} />
+        <StatCard label="MRR" value={fmtMoney(stripe.mrr)} accent sub={stripe.active_subscriptions ? `${stripe.active_subscriptions} active subs` : undefined} />
+      </div>
     </div>
   )
 }
 
-// ── Clerk card ────────────────────────────────────────────────────────────────
+// ── Clerk card ─────────────────────────────────────────────────────────────────
 
 function ClerkCard({ clerk }: { clerk: DashboardData["clerk"] }) {
   if (clerk.error) {
-    return <Card><Label>Users (Clerk)</Label><Sub style={{ color: C.error } as React.CSSProperties}>{clerk.error}</Sub></Card>
+    return (
+      <Card>
+        <SectionLabel>Users · Clerk</SectionLabel>
+        <p style={{ fontSize: "12px", color: C.error }}>{clerk.error}</p>
+      </Card>
+    )
   }
+
   const dist = clerk.plan_distribution ?? {}
   const total = Object.values(dist).reduce((a, b) => a + b, 0) || 1
   const planOrder = ["enterprise", "studio", "creator", "unknown"]
@@ -154,32 +192,43 @@ function ClerkCard({ clerk }: { clerk: DashboardData["clerk"] }) {
     enterprise: "#B8955A",
     studio: "rgba(184,149,90,0.65)",
     creator: "rgba(184,149,90,0.35)",
-    unknown: "rgba(248,246,243,0.15)",
+    unknown: "rgba(245,243,240,0.12)",
   }
+
   return (
     <Card>
-      <Label>Users · Clerk</Label>
-      <div style={{ display: "flex", gap: "32px", marginBottom: "16px" }}>
+      <SectionLabel>Users · Clerk</SectionLabel>
+      <div style={{ display: "flex", gap: "36px", marginBottom: "24px", alignItems: "flex-end" }}>
         <div>
-          <Big>{fmtNum(clerk.total_users)}</Big>
-          <Sub>total users</Sub>
+          <p style={{ fontSize: "44px", fontWeight: 300, letterSpacing: "-0.04em", color: C.text, margin: "0 0 4px", lineHeight: 1 }}>
+            {fmtNum(clerk.total_users)}
+          </p>
+          <p style={{ fontSize: "11px", color: C.muted, margin: 0 }}>total users</p>
         </div>
-        <div>
-          <Big style={{ fontSize: "22px" } as React.CSSProperties}>{fmtNum(clerk.new_users_last_30d)}</Big>
-          <Sub>new last 30d</Sub>
+        <div style={{ paddingBottom: "4px" }}>
+          <p style={{ fontSize: "24px", fontWeight: 400, letterSpacing: "-0.02em", color: C.text, margin: "0 0 4px", lineHeight: 1 }}>
+            +{fmtNum(clerk.new_users_last_30d)}
+          </p>
+          <p style={{ fontSize: "11px", color: C.muted, margin: 0 }}>last 30d</p>
         </div>
       </div>
-      {/* Plan distribution bar */}
-      <div style={{ display: "flex", borderRadius: "4px", overflow: "hidden", height: "6px", marginBottom: "10px" }}>
+
+      {/* Plan bar */}
+      <div style={{ display: "flex", borderRadius: "3px", overflow: "hidden", height: "4px", marginBottom: "12px", gap: "2px" }}>
         {planOrder.filter(p => dist[p]).map(p => (
-          <div key={p} style={{ width: `${(dist[p] / total) * 100}%`, background: planColor[p] ?? C.subtle }} />
+          <div key={p} style={{
+            flex: dist[p] / total,
+            background: planColor[p] ?? C.faint,
+            borderRadius: "2px",
+          }} />
         ))}
       </div>
-      <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+
+      <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
         {planOrder.filter(p => dist[p]).map(p => (
           <span key={p} style={{ fontSize: "11px", color: C.muted }}>
-            <span style={{ color: planColor[p] ?? C.muted, marginRight: "4px" }}>●</span>
-            {p} <strong style={{ color: C.text }}>{dist[p]}</strong>
+            <span style={{ color: planColor[p] ?? C.muted, marginRight: "5px" }}>●</span>
+            {p} <strong style={{ color: C.text, fontWeight: 500 }}>{dist[p]}</strong>
           </span>
         ))}
       </div>
@@ -187,204 +236,199 @@ function ClerkCard({ clerk }: { clerk: DashboardData["clerk"] }) {
   )
 }
 
-// ── Stripe card ───────────────────────────────────────────────────────────────
+// ── Stripe card ────────────────────────────────────────────────────────────────
+
+function eventLabel(type: string): string {
+  return type.replace("customer.subscription.", "").replace(/_/g, " ")
+}
 
 function StripeCard({ stripe }: { stripe: DashboardData["stripe"] }) {
   if (stripe.error) {
-    return <Card><Label>Revenue · Stripe</Label><Sub style={{ color: C.error } as React.CSSProperties}>{stripe.error}</Sub></Card>
+    return (
+      <Card>
+        <SectionLabel>Revenue · Stripe</SectionLabel>
+        <p style={{ fontSize: "12px", color: C.error }}>{stripe.error}</p>
+      </Card>
+    )
   }
+
   return (
     <Card>
-      <Label>Revenue · Stripe</Label>
-      <div style={{ display: "flex", gap: "32px", marginBottom: "16px" }}>
+      <SectionLabel>Revenue · Stripe</SectionLabel>
+      <div style={{ display: "flex", gap: "36px", marginBottom: "24px", alignItems: "flex-end" }}>
         <div>
-          <p style={{ fontSize: "36px", fontWeight: 700, letterSpacing: "-0.03em", color: C.brand, margin: 0 }}>
+          <p style={{ fontSize: "44px", fontWeight: 300, letterSpacing: "-0.04em", color: C.brand, margin: "0 0 4px", lineHeight: 1 }}>
             {fmtMoney(stripe.mrr)}
           </p>
-          <Sub>MRR</Sub>
+          <p style={{ fontSize: "11px", color: C.muted, margin: 0 }}>monthly recurring</p>
         </div>
-        <div>
-          <Big style={{ fontSize: "22px" } as React.CSSProperties}>{fmtNum(stripe.active_subscriptions)}</Big>
-          <Sub>active subs</Sub>
+        <div style={{ paddingBottom: "4px" }}>
+          <p style={{ fontSize: "24px", fontWeight: 400, letterSpacing: "-0.02em", color: C.text, margin: "0 0 4px", lineHeight: 1 }}>
+            {fmtMoney(stripe.revenue_last_30d)}
+          </p>
+          <p style={{ fontSize: "11px", color: C.muted, margin: 0 }}>revenue last 30d</p>
         </div>
-        <div>
-          <Big style={{ fontSize: "22px" } as React.CSSProperties}>{fmtMoney(stripe.revenue_last_30d)}</Big>
-          <Sub>revenue last 30d</Sub>
+        <div style={{ paddingBottom: "4px" }}>
+          <p style={{ fontSize: "24px", fontWeight: 400, letterSpacing: "-0.02em", color: C.text, margin: "0 0 4px", lineHeight: 1 }}>
+            {fmtNum(stripe.active_subscriptions)}
+          </p>
+          <p style={{ fontSize: "11px", color: C.muted, margin: 0 }}>active subs</p>
         </div>
       </div>
-      {/* Plan counts */}
-      {stripe.plan_counts && Object.keys(stripe.plan_counts).length > 0 && (
-        <div style={{ display: "flex", gap: "12px", marginBottom: "16px", flexWrap: "wrap" }}>
-          {Object.entries(stripe.plan_counts).map(([plan, count]) => (
-            <span key={plan} style={{ fontSize: "11px", color: C.muted }}>
-              {plan} <strong style={{ color: C.text }}>{count}</strong>
-            </span>
-          ))}
-        </div>
-      )}
-      {/* Recent events */}
+
       {stripe.recent_events && stripe.recent_events.length > 0 && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-          {stripe.recent_events.slice(0, 5).map((ev, i) => (
-            <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: "11px" }}>
-              <span style={{
-                color: ev.type.includes("deleted") ? C.error : ev.type.includes("created") ? C.brand : C.muted,
-                fontWeight: 500,
-              }}>
-                {eventLabel(ev.type)}
-              </span>
-              <span style={{ color: C.muted }}>{timeAgo(ev.created)}</span>
-            </div>
-          ))}
-        </div>
+        <>
+          <div style={{ height: "1px", background: C.divider, marginBottom: "16px" }} />
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            {stripe.recent_events.slice(0, 5).map((ev, i) => (
+              <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{
+                  fontSize: "12px", fontWeight: 500,
+                  color: ev.type.includes("deleted") ? C.error : ev.type.includes("created") ? C.brand : C.muted,
+                }}>
+                  {eventLabel(ev.type)}
+                </span>
+                <span style={{ fontSize: "11px", color: C.muted }}>{timeAgo(ev.created)}</span>
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </Card>
   )
 }
 
-// ── Variant table ─────────────────────────────────────────────────────────────
-
-function VariantTable({ voices, variants }: { voices: DashboardData["voices"]; variants: DashboardData["variants"] }) {
-  // Group variants by voice
-  const byVoice: Record<string, Array<{ variant: string; generations: number }>> = {}
-  for (const v of variants) {
-    if (!byVoice[v.voice_id]) byVoice[v.voice_id] = []
-    byVoice[v.voice_id].push({ variant: v.voice_variant, generations: v.generations })
-  }
-
-  return (
-    <Card style={{ marginTop: "12px" }}>
-      <Label>Variant Breakdown</Label>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "16px" }}>
-        {voices.map((voice) => {
-          const voiceVariants = byVoice[voice.voice_id] ?? []
-          const total = voiceVariants.reduce((a, v) => a + v.generations, 0) || 1
-          return (
-            <div key={voice.voice_id}>
-              <p style={{ fontSize: "12px", fontWeight: 600, color: C.text, margin: "0 0 8px", textTransform: "capitalize" }}>
-                {voice.voice_id}
-              </p>
-              <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-                {voiceVariants.sort((a, b) => b.generations - a.generations).map((v) => (
-                  <div key={v.variant}>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", marginBottom: "2px" }}>
-                      <span style={{ color: C.muted }}>{v.variant}</span>
-                      <span style={{ color: C.text, fontWeight: 500 }}>{v.generations}</span>
-                    </div>
-                    <div style={{ height: "3px", background: C.subtle, borderRadius: "2px" }}>
-                      <div style={{ height: "100%", width: `${(v.generations / total) * 100}%`, background: C.brand, borderRadius: "2px" }} />
-                    </div>
-                  </div>
-                ))}
-                {voiceVariants.length === 0 && <span style={{ fontSize: "11px", color: C.muted }}>No data</span>}
-              </div>
-            </div>
-          )
-        })}
-      </div>
-    </Card>
-  )
-}
-
-// ── Error state ───────────────────────────────────────────────────────────────
+// ── Error state ────────────────────────────────────────────────────────────────
 
 function ErrorState() {
   return (
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div style={{ textAlign: "center" }}>
-        <p style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.2em", color: C.muted, textTransform: "uppercase", marginBottom: "16px" }}>
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: C.bg }}>
+      <div style={{ textAlign: "center", maxWidth: "360px" }}>
+        <p style={{ fontSize: "9px", fontWeight: 700, letterSpacing: "0.2em", color: C.muted, textTransform: "uppercase", marginBottom: "20px" }}>
           Lyric Analytics
         </p>
-        <p style={{ fontSize: "16px", color: C.text, marginBottom: "8px" }}>Failed to load dashboard data</p>
-        <p style={{ fontSize: "13px", color: C.muted }}>Check that COMPOSER_API_URL and ANALYTICS_SECRET are set correctly.</p>
+        <p style={{ fontSize: "18px", color: C.text, marginBottom: "10px", letterSpacing: "-0.01em" }}>
+          Failed to load dashboard data
+        </p>
+        <p style={{ fontSize: "13px", color: C.muted, lineHeight: 1.6 }}>
+          Check that COMPOSER_API_URL and ANALYTICS_SECRET are set correctly.
+        </p>
       </div>
     </div>
   )
 }
 
-// ── Dashboard ─────────────────────────────────────────────────────────────────
+// ── Dashboard ──────────────────────────────────────────────────────────────────
 
 function DashboardInner({ data, range }: { data: DashboardData; range: number }) {
   return (
-    <div style={{ minHeight: "100vh", padding: "0 0 80px" }}>
+    <div style={{ minHeight: "100vh", background: C.bg, paddingBottom: "80px" }}>
 
       {/* Header */}
       <div style={{
         position: "sticky", top: 0, zIndex: 10,
-        background: "rgba(18,16,15,0.92)", backdropFilter: "blur(16px)",
-        borderBottom: "1px solid rgba(255,255,255,0.06)",
-        padding: "0 32px",
+        background: "rgba(13,11,10,0.88)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+        borderBottom: `1px solid ${C.divider}`,
+        padding: "0 40px",
         display: "flex", alignItems: "center", justifyContent: "space-between",
-        height: "56px",
+        height: "60px",
       }}>
-        <span style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.2em", color: C.text, textTransform: "uppercase" }}>
-          Lyric Analytics
-        </span>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <span style={{
+            fontSize: "9px", fontWeight: 700, letterSpacing: "0.24em",
+            color: C.brand, textTransform: "uppercase",
+          }}>
+            Lyric
+          </span>
+          <span style={{ width: "1px", height: "14px", background: C.divider }} />
+          <span style={{ fontSize: "11px", color: C.muted, letterSpacing: "0.04em" }}>Analytics</span>
+        </div>
         <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
           <span style={{ fontSize: "11px", color: C.muted }}>
-            Updated {timeAgo(data.generated_at)}
+            {timeAgo(data.generated_at)}
           </span>
           <RangeToggle current={range} />
         </div>
       </div>
 
-      <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "32px 32px 0" }}>
+      <div style={{ maxWidth: "1360px", margin: "0 auto", padding: "36px 40px 0" }}>
 
         {/* Overview */}
-        <OverviewBar data={data} />
+        <OverviewSection data={data} />
 
-        {/* Trend chart */}
-        <Card style={{ marginTop: "24px" }}>
-          <Label>Daily Trend · Last {range}d</Label>
+        {/* Trend */}
+        <Card style={{ marginTop: "12px" }}>
+          <SectionLabel>Daily Trend · Last {range}d</SectionLabel>
           <TrendChart data={data.daily_trend} />
         </Card>
 
+        {/* Voices */}
+        <div style={{ marginTop: "12px" }}>
+          <Card>
+            <SectionLabel>Voice Breakdown</SectionLabel>
+            <VoiceChart data={data.voices} variants={data.variants} />
+          </Card>
+        </div>
+
+        {/* Emotional directions */}
+        <Card style={{ marginTop: "12px" }}>
+          <SectionLabel>Emotional Directions</SectionLabel>
+          <EmotionalChart data={data.emotional_directions} />
+        </Card>
+
         {/* Clerk + Stripe */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginTop: "16px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginTop: "12px" }}>
           <ClerkCard clerk={data.clerk} />
           <StripeCard stripe={data.stripe} />
         </div>
 
-        {/* Voice breakdown */}
-        <Card style={{ marginTop: "16px" }}>
-          <Label>Voice Breakdown</Label>
-          <VoiceChart data={data.voices} />
-        </Card>
-
-        <VariantTable voices={data.voices} variants={data.variants} />
-
-        {/* Emotional directions */}
-        <Card style={{ marginTop: "12px" }}>
-          <Label>Emotional Directions</Label>
-          <EmotionalChart data={data.emotional_directions} />
-        </Card>
-
         {/* Plan breakdown */}
-        <Card style={{ marginTop: "12px" }}>
-          <Label>Plan Breakdown</Label>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "12px" }}>
-            {data.plan_breakdown.map((row) => (
-              <div key={row.plan_tier}>
-                <p style={{ fontSize: "11px", fontWeight: 600, color: C.brand, textTransform: "capitalize", margin: "0 0 6px" }}>{row.plan_tier}</p>
-                <div style={{ fontSize: "12px", color: C.muted, display: "flex", flexDirection: "column", gap: "3px" }}>
-                  <span>Generations: <strong style={{ color: C.text }}>{fmtNum(row.generations)}</strong></span>
-                  <span>Downloads: <strong style={{ color: C.text }}>{fmtNum(row.downloads)}</strong></span>
-                  <span>Users: <strong style={{ color: C.text }}>{fmtNum(row.unique_users)}</strong></span>
+        {data.plan_breakdown.length > 0 && (
+          <Card style={{ marginTop: "12px" }}>
+            <SectionLabel>By Plan</SectionLabel>
+            <div style={{ display: "flex", gap: "0", flexWrap: "wrap" }}>
+              {data.plan_breakdown.map((row, i) => (
+                <div key={row.plan_tier} style={{
+                  flex: "1", minWidth: "140px",
+                  paddingRight: "24px",
+                  borderRight: i < data.plan_breakdown.length - 1 ? `1px solid ${C.divider}` : "none",
+                  marginRight: i < data.plan_breakdown.length - 1 ? "24px" : 0,
+                }}>
+                  <p style={{
+                    fontSize: "10px", fontWeight: 700, color: C.brand,
+                    textTransform: "capitalize", letterSpacing: "0.1em", margin: "0 0 12px",
+                  }}>
+                    {row.plan_tier}
+                  </p>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                    {([
+                      ["Generations", fmtNum(row.generations)],
+                      ["Downloads", fmtNum(row.downloads)],
+                      ["Users", fmtNum(row.unique_users)],
+                    ] as [string, string][]).map(([label, val]) => (
+                      <div key={label} style={{ display: "flex", justifyContent: "space-between" }}>
+                        <span style={{ fontSize: "12px", color: C.muted }}>{label}</span>
+                        <span style={{ fontSize: "12px", color: C.text, fontWeight: 500 }}>{val}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </Card>
+              ))}
+            </div>
+          </Card>
+        )}
 
-        {/* Latency footer */}
-        <div style={{ display: "flex", gap: "24px", marginTop: "16px", justifyContent: "flex-end" }}>
-          {[
-            ["avg latency", fmtMs(data.latency.avg_ms)],
-            ["p50", fmtMs(data.latency.p50_ms)],
-            ["p95", fmtMs(data.latency.p95_ms)],
-          ].map(([label, val]) => (
+        {/* Latency footnote */}
+        <div style={{ display: "flex", gap: "28px", marginTop: "20px", justifyContent: "flex-end", paddingRight: "4px" }}>
+          {([
+            ["avg", data.latency.avg_ms],
+            ["p50", data.latency.p50_ms],
+            ["p95", data.latency.p95_ms],
+          ] as [string, number | null][]).map(([label, val]) => (
             <span key={label} style={{ fontSize: "11px", color: C.muted }}>
-              {label} <strong style={{ color: C.text }}>{val}</strong>
+              {label} <strong style={{ color: C.text, fontWeight: 500 }}>{fmtMs(val)}</strong>
             </span>
           ))}
         </div>
