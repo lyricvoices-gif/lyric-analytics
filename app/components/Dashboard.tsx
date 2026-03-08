@@ -335,15 +335,19 @@ function DashboardInner({ data, range }: { data: DashboardData; range: number })
         display: "flex", alignItems: "center", justifyContent: "space-between",
         height: "60px",
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "0" }}>
           <span style={{
-            fontSize: "9px", fontWeight: 700, letterSpacing: "0.24em",
+            fontSize: "13px", fontWeight: 700, letterSpacing: "0.18em",
             color: C.brand, textTransform: "uppercase",
           }}>
             Lyric
           </span>
-          <span style={{ width: "1px", height: "14px", background: C.divider }} />
-          <span style={{ fontSize: "11px", color: C.muted, letterSpacing: "0.04em" }}>Analytics</span>
+          <span style={{
+            fontSize: "13px", fontWeight: 300, letterSpacing: "0.18em",
+            color: C.muted, textTransform: "uppercase",
+          }}>
+            Analytics
+          </span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
           <span style={{ fontSize: "11px", color: C.muted }}>
