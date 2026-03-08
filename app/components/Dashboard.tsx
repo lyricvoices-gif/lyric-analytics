@@ -343,8 +343,8 @@ function DashboardInner({ data, range }: { data: DashboardData; range: number })
             Lyric
           </span>
           <span style={{
-            fontSize: "13px", fontWeight: 300, letterSpacing: "0.18em",
-            color: C.muted, textTransform: "uppercase",
+            fontSize: "13px", fontWeight: 300, letterSpacing: "0.06em",
+            color: C.muted,
           }}>
             Analytics
           </span>
