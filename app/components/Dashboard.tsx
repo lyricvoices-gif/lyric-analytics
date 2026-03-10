@@ -347,7 +347,7 @@ function DashboardInner({ data, range }: { data: DashboardData; range: number })
             fontSize: "13px", fontWeight: 300, letterSpacing: "0.06em",
             color: C.muted,
           }}>
-            Analytics
+            {" "}analytics
           </span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
