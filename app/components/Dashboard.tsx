@@ -337,10 +337,11 @@ function DashboardInner({ data, range }: { data: DashboardData; range: number })
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: "0" }}>
           <span style={{
-            fontSize: "13px", fontWeight: 700, letterSpacing: "0.18em",
-            color: C.brand, textTransform: "uppercase",
+            fontFamily: "Agrandir, sans-serif",
+            fontSize: "16px", fontWeight: 800, letterSpacing: "0.04em",
+            color: C.brand,
           }}>
-            Lyric
+            lyric
           </span>
           <span style={{
             fontSize: "13px", fontWeight: 300, letterSpacing: "0.06em",
