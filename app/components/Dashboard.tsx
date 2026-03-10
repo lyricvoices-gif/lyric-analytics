@@ -338,7 +338,7 @@ function DashboardInner({ data, range }: { data: DashboardData; range: number })
         <div style={{ display: "flex", alignItems: "baseline", gap: "6px" }}>
           <span style={{
             fontFamily: "Agrandir, sans-serif",
-            fontSize: "16px", fontWeight: 800, letterSpacing: "0.04em",
+            fontSize: "16px", fontWeight: 400, letterSpacing: "0.04em",
             color: C.brand,
           }}>
             lyric
