@@ -335,7 +335,7 @@ function DashboardInner({ data, range }: { data: DashboardData; range: number })
         display: "flex", alignItems: "center", justifyContent: "space-between",
         height: "60px",
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "0" }}>
+        <div style={{ display: "flex", alignItems: "baseline", gap: "6px" }}>
           <span style={{
             fontFamily: "Agrandir, sans-serif",
             fontSize: "16px", fontWeight: 800, letterSpacing: "0.04em",
@@ -347,7 +347,7 @@ function DashboardInner({ data, range }: { data: DashboardData; range: number })
             fontSize: "13px", fontWeight: 300, letterSpacing: "0.06em",
             color: C.muted,
           }}>
-            {" "}analytics
+            analytics
           </span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
