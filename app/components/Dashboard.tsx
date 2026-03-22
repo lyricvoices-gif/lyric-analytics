@@ -117,6 +117,7 @@ function StatCard({
           fontSize: display ? "52px" : "30px",
           fontWeight: display ? 300 : 500,
           fontFamily: display ? "'Cormorant Garamond', Georgia, serif" : "inherit",
+          fontVariantNumeric: display ? "lining-nums tabular-nums" : "inherit",
           letterSpacing: display ? "-0.02em" : "-0.02em",
           color: accent ? C.gold : C.text,
           margin: 0, lineHeight: 1,
@@ -347,10 +348,10 @@ function VoicesTab({ data }: { data: DashboardData }) {
       {data.emotional_directions.length > 0 && (
         <Panel>
           <Label>Emotional directions</Label>
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
             {data.emotional_directions.map((row) => (
               <div key={row.emotional_direction}>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
                   <span style={{ fontSize: "13px", color: C.text, fontWeight: 500 }}>{row.emotional_direction}</span>
                   <span style={{ fontSize: "12px", color: C.muted }}>
                     {fmtNum(row.uses)} uses · {fmtNum(row.unique_users)} users · {fmtPct(row.pct)}
@@ -546,6 +547,7 @@ function RevenueTab({ data }: { data: DashboardData }) {
               <p style={{
                 fontSize: "52px", fontWeight: 300, letterSpacing: "-0.02em",
                 fontFamily: "'Cormorant Garamond', Georgia, serif",
+                fontVariantNumeric: "lining-nums tabular-nums",
                 color: C.text, margin: "0 0 4px", lineHeight: 1,
               }}>
                 {fmtNum(clerk.total_users)}
