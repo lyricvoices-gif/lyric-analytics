@@ -7,12 +7,12 @@ import {
 import type { DashboardData } from "../types"
 
 const C = {
-  brand: "#B8955A",
-  muted: "rgba(248,246,243,0.35)",
-  accent: "rgba(248,246,243,0.6)",
-  gridLine: "rgba(255,255,255,0.05)",
-  tooltipBg: "#1e1c1a",
-  tooltipBorder: "rgba(255,255,255,0.08)",
+  brand: "#c9a96e",
+  muted: "rgba(43,42,37,0.4)",
+  accent: "rgba(43,42,37,0.6)",
+  gridLine: "rgba(43,42,37,0.08)",
+  tooltipBg: "#f5f3ef",
+  tooltipBorder: "rgba(43,42,37,0.14)",
 }
 
 function formatDate(dateStr: string): string {
@@ -50,8 +50,8 @@ export function TrendChart({ data }: { data: DashboardData["daily_trend"] }) {
           tickLine={false}
         />
         <Tooltip
-          contentStyle={{ background: C.tooltipBg, border: `1px solid ${C.tooltipBorder}`, borderRadius: "10px", fontSize: "12px" }}
-          labelStyle={{ color: "#faf9f7", marginBottom: "4px" }}
+          contentStyle={{ background: C.tooltipBg, border: `1px solid ${C.tooltipBorder}`, borderRadius: "0", fontSize: "12px" }}
+          labelStyle={{ color: "#2b2a25", marginBottom: "4px" }}
           itemStyle={{ color: C.muted }}
         />
         <Legend

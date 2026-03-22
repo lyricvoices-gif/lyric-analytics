@@ -1,3 +1,26 @@
+export interface TrialFunnelRow {
+  total_trials: number
+  converted: number
+  cancelled: number
+  expired: number
+  conversion_rate: number | null
+}
+
+export interface IntentBreakdownRow {
+  onboarding_intent: string
+  total_users: number
+  converted: number
+  conversion_rate: number | null
+}
+
+export interface VoiceAffinityRow {
+  onboarding_voice: string
+  onboarding_variant: string | null
+  total_users: number
+  converted: number
+  conversion_rate: number | null
+}
+
 export interface DashboardData {
   range_days: number
   generated_at: string
@@ -56,6 +79,36 @@ export interface DashboardData {
     revenue_last_30d?: number
     plan_counts?: Record<string, number>
     recent_events?: Array<{ type: string; created: string }>
+    error?: string
+  }
+  trial: {
+    funnel?: TrialFunnelRow
+    intent_breakdown?: IntentBreakdownRow[]
+    voice_affinity?: VoiceAffinityRow[]
+    error?: string
+  }
+  genome?: {
+    download_performance?: Array<{
+      voice_id: string
+      variant: string
+      total_generations: number
+      downloads: number
+      download_rate: number | null
+      regenerations: number
+      regeneration_rate: number | null
+    }>
+    use_case_breakdown?: Array<{
+      voice_id: string
+      variant: string
+      use_case: string
+      total_generations: number
+      downloads: number
+      download_rate: number | null
+      regenerations: number
+      avg_direction_marks: number | null
+      avg_script_length: number | null
+      avg_audio_duration: number | null
+    }>
     error?: string
   }
 }
