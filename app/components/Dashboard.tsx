@@ -25,6 +25,31 @@ const C = {
   good: "#4a7c59",
 }
 
+// ── Voice name mapping ───────────────────────────────────────────────────────────
+
+const VOICE_NAMES: Record<string, string> = {
+  "morgan-anchor":  "Morgan · The Anchor",
+  "nova-intimist":  "Nova · The Intimist",
+  "atlas-guide":    "Atlas · The Guide",
+  "riven-narrator": "Riven · The Narrator",
+  "hex-wildcard":   "Hex · The Wildcard",
+}
+
+function formatVoiceName(voiceId: string): string {
+  return VOICE_NAMES[voiceId] ?? voiceId
+}
+
+// ── Price ID mapping ─────────────────────────────────────────────────────────────
+
+const PRICE_ID_TO_PLAN: Record<string, string> = {
+  "Price_1Ss1jqRr73DR28HOvpgtZDC": "Creator",
+}
+
+function formatPlanName(planId: string): string {
+  if (!planId || planId === "unknown") return "Trial"
+  return PRICE_ID_TO_PLAN[planId] ?? planId
+}
+
 // ── Formatters ──────────────────────────────────────────────────────────────────
 
 function fmtAudio(seconds: number | undefined | null): string {
@@ -284,7 +309,7 @@ function VoicesTab({ data }: { data: DashboardData }) {
             {data.voices.map((row) => (
               <tr key={row.voice_id}>
                 {[
-                  row.voice_id,
+                  formatVoiceName(row.voice_id),
                   fmtNum(row.generations),
                   fmtNum(row.downloads),
                   fmtNum(row.unique_users),
@@ -327,7 +352,7 @@ function VoicesTab({ data }: { data: DashboardData }) {
             <tbody>
               {data.variants.map((row, i) => (
                 <tr key={i}>
-                  {[row.voice_id, row.voice_variant, fmtNum(row.generations)].map((val, j) => (
+                  {[formatVoiceName(row.voice_id), row.voice_variant, fmtNum(row.generations)].map((val, j) => (
                     <td key={j} style={{
                       fontSize: "13px", padding: "10px 0",
                       color: j === 0 ? C.text : C.muted,
@@ -462,7 +487,7 @@ function TrialTab({ data }: { data: DashboardData }) {
               {trial.voice_affinity.map((row, i) => (
                 <tr key={i}>
                   {[
-                    row.onboarding_voice,
+                    formatVoiceName(row.onboarding_voice),
                     row.onboarding_variant ?? "—",
                     fmtNum(row.total_users),
                     fmtNum(row.converted),
@@ -512,7 +537,7 @@ function RevenueTab({ data }: { data: DashboardData }) {
             <Label>Active by plan</Label>
             {Object.entries(stripe.plan_counts).map(([plan, count]) => (
               <div key={plan} style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
-                <span style={{ fontSize: "13px", color: C.text, fontWeight: 500, textTransform: "capitalize" }}>{plan}</span>
+                <span style={{ fontSize: "13px", color: C.text, fontWeight: 500 }}>{formatPlanName(plan)}</span>
                 <span style={{ fontSize: "13px", color: C.muted }}>{count}</span>
               </div>
             ))}
@@ -583,7 +608,7 @@ function RevenueTab({ data }: { data: DashboardData }) {
                   {planOrder.filter((p) => dist[p]).map((p) => (
                     <span key={p} style={{ fontSize: "11px", color: C.muted }}>
                       <span style={{ color: planColor[p], marginRight: "5px" }}>●</span>
-                      {p} <strong style={{ color: C.text, fontWeight: 500 }}>{dist[p]}</strong>
+                      {formatPlanName(p)} <strong style={{ color: C.text, fontWeight: 500 }}>{dist[p]}</strong>
                     </span>
                   ))}
                 </div>
@@ -635,7 +660,7 @@ function VoiceGenomeTab({ data }: { data: DashboardData }) {
               {genome.download_performance.map((row, i) => (
                 <tr key={i}>
                   {[
-                    row.voice_id,
+                    formatVoiceName(row.voice_id),
                     row.variant,
                     fmtNum(row.total_generations),
                     fmtNum(row.downloads),
@@ -682,7 +707,7 @@ function VoiceGenomeTab({ data }: { data: DashboardData }) {
               {genome.use_case_breakdown.map((row, i) => (
                 <tr key={i}>
                   {[
-                    row.voice_id,
+                    formatVoiceName(row.voice_id),
                     row.variant,
                     row.use_case,
                     fmtNum(row.total_generations),
