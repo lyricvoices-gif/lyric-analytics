@@ -3,11 +3,20 @@
 import type { DashboardData } from "../types"
 
 const C = {
-  brand: "#B8955A",
-  text: "#f5f3f0",
-  muted: "rgba(245,243,240,0.4)",
-  faint: "rgba(245,243,240,0.07)",
-  border: "rgba(255,255,255,0.07)",
+  gold: "#c9a96e",
+  text: "#f5f3ef",
+  muted: "rgba(245,243,239,0.4)",
+  faint: "rgba(245,243,239,0.06)",
+  border: "rgba(245,243,239,0.08)",
+  panelBg: "rgba(245,243,239,0.03)",
+}
+
+const VOICE_NAMES: Record<string, string> = {
+  "morgan-anchor": "Morgan · The Anchor",
+  "nova-intimist": "Nova · The Intimist",
+  "atlas-guide": "Atlas · The Guide",
+  "riven-narrator": "Riven · The Narrator",
+  "hex-wildcard": "Hex · The Wildcard",
 }
 
 function fmtNum(n: number | string | undefined | null): string {
@@ -48,7 +57,7 @@ export function VoiceChart({
   }
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "12px" }}>
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: "12px" }}>
       {data.map((voice) => {
         const gen = Number(voice.generations)
         const dl = Number(voice.downloads)
@@ -61,83 +70,88 @@ export function VoiceChart({
           <div
             key={voice.voice_id}
             style={{
-              background: C.faint,
+              background: C.panelBg,
               border: `1px solid ${C.border}`,
-              borderRadius: "14px",
-              padding: "22px 20px",
+              padding: "24px 22px",
               position: "relative",
               overflow: "hidden",
             }}
           >
-            {/* Top accent */}
+            {/* Top gold accent line */}
             <div style={{
               position: "absolute",
               top: 0, left: 0, right: 0,
               height: "2px",
-              background: `linear-gradient(90deg, rgba(184,149,90,${0.25 + 0.75 * share}), transparent 80%)`,
+              background: `linear-gradient(90deg, rgba(201,169,110,${0.25 + 0.75 * share}), transparent 80%)`,
             }} />
 
             <p style={{
               fontSize: "10px", fontWeight: 700, letterSpacing: "0.16em",
-              color: C.brand, textTransform: "uppercase", margin: "0 0 14px",
+              color: C.gold, textTransform: "uppercase", margin: "0 0 16px",
+              fontFamily: "'Agrandir Narrow', sans-serif",
             }}>
-              {voice.voice_id}
+              {VOICE_NAMES[voice.voice_id] ?? voice.voice_id}
             </p>
 
             <p style={{
-              fontSize: "34px", fontWeight: 300, letterSpacing: "-0.03em",
+              fontSize: "36px", fontWeight: 300, letterSpacing: "-0.03em",
+              fontFamily: "'Cormorant Garamond', Georgia, serif",
+              fontVariantNumeric: "lining-nums tabular-nums",
               color: C.text, margin: "0 0 2px", lineHeight: 1,
             }}>
               {fmtNum(gen)}
             </p>
             <p style={{
-              fontSize: "10px", color: C.muted, margin: "0 0 14px",
+              fontSize: "10px", color: C.muted, margin: "0 0 16px",
               textTransform: "uppercase", letterSpacing: "0.1em",
+              fontFamily: "'Agrandir Narrow', sans-serif",
             }}>
               generations
             </p>
 
-            <div style={{ height: "2px", background: "rgba(255,255,255,0.06)", borderRadius: "1px", marginBottom: "18px" }}>
+            {/* Share bar */}
+            <div style={{ height: "2px", background: C.faint, marginBottom: "20px" }}>
               <div style={{
                 height: "100%", width: `${share * 100}%`,
-                background: C.brand, borderRadius: "1px", opacity: 0.55,
+                background: C.gold, opacity: 0.55,
                 transition: "width 0.5s ease",
               }} />
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "12px", marginBottom: vVariants.length ? "18px" : 0 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "12px", marginBottom: vVariants.length ? "20px" : 0 }}>
               {([
                 ["Downloads", fmtNum(dl)],
                 ["Users", fmtNum(users)],
                 ["Avg Audio", fmtAudio(voice.avg_audio_s)],
               ] as [string, string][]).map(([label, val]) => (
                 <div key={label}>
-                  <p style={{ fontSize: "14px", fontWeight: 500, color: C.text, margin: "0 0 3px" }}>{val}</p>
-                  <p style={{ fontSize: "10px", color: C.muted, margin: 0, letterSpacing: "0.04em" }}>{label}</p>
+                  <p style={{ fontSize: "15px", fontWeight: 500, color: C.text, margin: "0 0 3px" }}>{val}</p>
+                  <p style={{ fontSize: "10px", color: C.muted, margin: 0, letterSpacing: "0.04em", fontFamily: "'Agrandir Narrow', sans-serif" }}>{label}</p>
                 </div>
               ))}
             </div>
 
             {vVariants.length > 0 && (
-              <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "14px" }}>
+              <div style={{ borderTop: `1px solid ${C.faint}`, paddingTop: "16px" }}>
                 <p style={{
                   fontSize: "9px", fontWeight: 700, color: C.muted,
-                  textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 8px",
+                  textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 10px",
+                  fontFamily: "'Agrandir Narrow', sans-serif",
                 }}>
                   Variants
                 </p>
-                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                   {vVariants.slice(0, 4).map((v) => (
                     <div key={v.variant}>
-                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", marginBottom: "3px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", marginBottom: "3px" }}>
                         <span style={{ color: C.muted }}>{v.variant}</span>
                         <span style={{ color: C.text, fontWeight: 500 }}>{v.generations}</span>
                       </div>
-                      <div style={{ height: "2px", background: "rgba(255,255,255,0.06)", borderRadius: "1px" }}>
+                      <div style={{ height: "2px", background: C.faint }}>
                         <div style={{
                           height: "100%",
                           width: `${(v.generations / variantTotal) * 100}%`,
-                          background: C.brand, borderRadius: "1px", opacity: 0.45,
+                          background: C.gold, opacity: 0.45,
                         }} />
                       </div>
                     </div>

@@ -19,9 +19,30 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             font-style: normal;
             font-display: swap;
           }
+          @font-face {
+            font-family: "Agrandir";
+            src: url("/fonts/Agrandir-TextBold.otf") format("opentype");
+            font-weight: 700;
+            font-style: normal;
+            font-display: swap;
+          }
+          @font-face {
+            font-family: "Agrandir Narrow";
+            src: url("/fonts/Agrandir-Narrow.otf") format("opentype");
+            font-weight: 400;
+            font-style: normal;
+            font-display: swap;
+          }
+          @font-face {
+            font-family: "Agrandir Grand";
+            src: url("/fonts/Agrandir-GrandLight.otf") format("opentype");
+            font-weight: 300;
+            font-style: normal;
+            font-display: swap;
+          }
         `}</style>
       </head>
-      <body style={{ margin: 0, background: "#2b2a25", color: "#f5f3ef", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
+      <body style={{ margin: 0, background: "#2b2a25", color: "#f5f3ef", fontFamily: "'Agrandir', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
         {children}
       </body>
     </html>

@@ -1,23 +1,46 @@
 "use client"
 
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
+  AreaChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Legend,
 } from "recharts"
 import type { DashboardData } from "../types"
 
 const C = {
-  brand: "#c9a96e",
-  muted: "rgba(43,42,37,0.4)",
-  accent: "rgba(43,42,37,0.6)",
-  gridLine: "rgba(43,42,37,0.08)",
-  tooltipBg: "#f5f3ef",
-  tooltipBorder: "rgba(43,42,37,0.14)",
+  gold: "#c9a96e",
+  goldFaint: "rgba(201,169,110,0.15)",
+  muted: "rgba(245,243,239,0.4)",
+  accent: "rgba(245,243,239,0.55)",
+  gridLine: "rgba(245,243,239,0.06)",
+  tooltipBg: "#35342f",
+  tooltipBorder: "rgba(245,243,239,0.12)",
+  text: "#f5f3ef",
 }
 
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr)
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+}
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+function CustomTooltip({ active, payload, label }: any) {
+  if (!active || !payload?.length) return null
+  return (
+    <div style={{
+      background: C.tooltipBg,
+      border: `1px solid ${C.tooltipBorder}`,
+      padding: "12px 16px",
+      minWidth: "140px",
+    }}>
+      <p style={{ fontSize: "11px", color: C.muted, margin: "0 0 8px", fontFamily: "'Agrandir Narrow', sans-serif", letterSpacing: "0.06em", textTransform: "uppercase" }}>{label}</p>
+      {payload.map((entry: any) => (
+        <div key={entry.dataKey} style={{ display: "flex", justifyContent: "space-between", gap: "16px", marginBottom: "4px" }}>
+          <span style={{ fontSize: "12px", color: C.muted }}>{entry.dataKey.replace("_", " ")}</span>
+          <span style={{ fontSize: "12px", color: entry.color, fontWeight: 500 }}>{Number(entry.value).toLocaleString()}</span>
+        </div>
+      ))}
+    </div>
+  )
 }
 
 export function TrendChart({ data }: { data: DashboardData["daily_trend"] }) {
@@ -34,37 +57,40 @@ export function TrendChart({ data }: { data: DashboardData["daily_trend"] }) {
   }))
 
   return (
-    <ResponsiveContainer width="100%" height={260}>
-      <LineChart data={formatted} margin={{ top: 8, right: 16, left: -8, bottom: 0 }}>
+    <ResponsiveContainer width="100%" height={300}>
+      <AreaChart data={formatted} margin={{ top: 8, right: 16, left: -8, bottom: 0 }}>
+        <defs>
+          <linearGradient id="goldGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={C.gold} stopOpacity={0.35} />
+            <stop offset="100%" stopColor={C.gold} stopOpacity={0.02} />
+          </linearGradient>
+        </defs>
         <CartesianGrid strokeDasharray="3 3" stroke={C.gridLine} vertical={false} />
         <XAxis
           dataKey="label"
-          tick={{ fontSize: 11, fill: C.muted }}
+          tick={{ fontSize: 11, fill: C.muted, fontFamily: "'Agrandir Narrow', sans-serif" }}
           axisLine={false}
           tickLine={false}
           interval="preserveStartEnd"
         />
         <YAxis
-          tick={{ fontSize: 11, fill: C.muted }}
+          tick={{ fontSize: 11, fill: C.muted, fontFamily: "'Agrandir Narrow', sans-serif" }}
           axisLine={false}
           tickLine={false}
         />
-        <Tooltip
-          contentStyle={{ background: C.tooltipBg, border: `1px solid ${C.tooltipBorder}`, borderRadius: "0", fontSize: "12px" }}
-          labelStyle={{ color: "#2b2a25", marginBottom: "4px" }}
-          itemStyle={{ color: C.muted }}
-        />
+        <Tooltip content={<CustomTooltip />} cursor={{ stroke: "rgba(245,243,239,0.08)" }} />
         <Legend
-          wrapperStyle={{ fontSize: "11px", paddingTop: "12px" }}
-          formatter={(value) => <span style={{ color: C.muted }}>{value}</span>}
+          wrapperStyle={{ fontSize: "11px", paddingTop: "16px", fontFamily: "'Agrandir Narrow', sans-serif" }}
+          formatter={(value: string) => <span style={{ color: C.muted, textTransform: "capitalize" }}>{value.replace("_", " ")}</span>}
         />
-        <Line
+        <Area
           type="monotone"
           dataKey="generations"
-          stroke={C.brand}
+          stroke={C.gold}
           strokeWidth={2}
+          fill="url(#goldGradient)"
           dot={false}
-          activeDot={{ r: 4, fill: C.brand }}
+          activeDot={{ r: 4, fill: C.gold, stroke: C.gold, strokeWidth: 0 }}
         />
         <Line
           type="monotone"
@@ -83,7 +109,7 @@ export function TrendChart({ data }: { data: DashboardData["daily_trend"] }) {
           dot={false}
           activeDot={{ r: 3 }}
         />
-      </LineChart>
+      </AreaChart>
     </ResponsiveContainer>
   )
 }

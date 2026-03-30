@@ -16,8 +16,8 @@ Data source: `lyric-composer`'s `/api/analytics/dashboard` endpoint (proxied, au
 | Layer | Tech |
 |---|---|
 | Framework | Next.js App Router (TypeScript) |
-| Charts | Recharts (LineChart, Line) |
-| Fonts | Cormorant Garamond (Google Fonts, loaded in layout.tsx) |
+| Charts | Recharts (AreaChart, BarChart, PieChart, custom charts) |
+| Fonts | Agrandir (primary, local), Cormorant Garamond (display numbers, Google Fonts) |
 | Hosting | Vercel |
 
 ---
@@ -48,13 +48,19 @@ good:         "#4a7c59"
 
 ```
 app/
-  layout.tsx          — Cormorant Garamond Google Fonts link tags, body background #2b2a25
-  page.tsx            — Server component: fetches dashboard data, passes to <Dashboard>
-  types.ts            — DashboardData, all row interfaces
+  layout.tsx            — Agrandir @font-face + Cormorant Garamond, body background #2b2a25
+  page.tsx              — Server component: fetches dashboard data, passes to <Dashboard>
+  types.ts              — DashboardData, all row interfaces
 
 components/
-  Dashboard.tsx       — Main dashboard UI (5-tab layout)
-  TrendChart.tsx      — Recharts wrapper for daily trend line chart
+  Dashboard.tsx         — Main dashboard UI (5-tab layout, dark-first design system)
+  TrendChart.tsx        — AreaChart with gold gradient fill for daily trends
+  PlanDonut.tsx         — Donut charts for plan breakdown + revenue plan distribution
+  VoiceBarChart.tsx     — Horizontal bar chart comparing voice generation performance
+  VoiceChart.tsx        — Voice detail cards (dark glass panels)
+  EmotionalChart.tsx    — Recharts horizontal bar chart for emotional directions
+  FunnelChart.tsx       — Trial funnel + intent conversion + voice affinity bar charts
+  GenomeChart.tsx       — Grouped bar chart for DL/regen rates + use case heatmap
 ```
 
 ---
