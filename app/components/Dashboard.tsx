@@ -656,20 +656,26 @@ function DashboardInner({ data, range }: { data: DashboardData; range: number })
           display: "flex", alignItems: "center", justifyContent: "space-between",
           height: "60px",
         }}>
-          <div style={{ display: "flex", alignItems: "baseline", gap: "10px" }}>
+          <div style={{ display: "flex", alignItems: "baseline", gap: "0" }}>
             <span style={{
-              fontFamily: "'Cormorant Garamond', Georgia, serif",
-              fontSize: "22px", fontWeight: 400, letterSpacing: "0.02em",
+              fontFamily: "'PP Editorial New', Georgia, serif",
+              fontSize: "26px", fontWeight: 400, fontStyle: "italic",
+              letterSpacing: "-0.01em",
               color: C.gold,
+              lineHeight: 1,
             }}>
-              lyric
+              Lyric
             </span>
             <span style={{
-              fontSize: "11px", fontWeight: 400, letterSpacing: "0.12em",
-              color: C.muted, textTransform: "uppercase",
-              fontFamily: "'Agrandir Narrow', sans-serif",
+              fontFamily: "'PP Editorial New', Georgia, serif",
+              fontSize: "26px", fontWeight: 400, fontStyle: "normal",
+              letterSpacing: "-0.01em",
+              color: C.text,
+              lineHeight: 1,
+              marginLeft: "8px",
+              opacity: 0.7,
             }}>
-              analytics
+              Analytics
             </span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>

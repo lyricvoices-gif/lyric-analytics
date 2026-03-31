@@ -40,6 +40,27 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             font-style: normal;
             font-display: swap;
           }
+          @font-face {
+            font-family: "PP Editorial New";
+            src: url("/fonts/PPEditorialNew-Regular.otf") format("opentype");
+            font-weight: 400;
+            font-style: normal;
+            font-display: swap;
+          }
+          @font-face {
+            font-family: "PP Editorial New";
+            src: url("/fonts/PPEditorialNew-Italic.otf") format("opentype");
+            font-weight: 400;
+            font-style: italic;
+            font-display: swap;
+          }
+          @font-face {
+            font-family: "PP Editorial New";
+            src: url("/fonts/PPEditorialNew-Ultrabold.otf") format("opentype");
+            font-weight: 800;
+            font-style: normal;
+            font-display: swap;
+          }
         `}</style>
       </head>
       <body style={{ margin: 0, background: "#2b2a25", color: "#f5f3ef", fontFamily: "'Agrandir', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
