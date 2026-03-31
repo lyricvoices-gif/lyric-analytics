@@ -50,25 +50,27 @@ export function PlanDonut({ data, formatPlanName }: PlanDonutProps) {
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "32px" }}>
-      <ResponsiveContainer width={180} height={180}>
-        <PieChart>
-          <Pie
-            data={chartData}
-            cx="50%"
-            cy="50%"
-            innerRadius={55}
-            outerRadius={80}
-            paddingAngle={2}
-            dataKey="value"
-            stroke="none"
-          >
-            {chartData.map((_, i) => (
-              <Cell key={i} fill={GOLD_SCALE[i % GOLD_SCALE.length]} />
-            ))}
-          </Pie>
-          <Tooltip content={<CustomTooltip />} />
-        </PieChart>
-      </ResponsiveContainer>
+      <div style={{ width: "180px", height: "180px", flexShrink: 0 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={chartData}
+              cx="50%"
+              cy="50%"
+              innerRadius={55}
+              outerRadius={80}
+              paddingAngle={2}
+              dataKey="value"
+              stroke="none"
+            >
+              {chartData.map((_, i) => (
+                <Cell key={i} fill={GOLD_SCALE[i % GOLD_SCALE.length]} />
+              ))}
+            </Pie>
+            <Tooltip content={<CustomTooltip />} />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
         {chartData.map((d, i) => {
           const pct = total > 0 ? Math.round((d.value / total) * 100) : 0
@@ -100,25 +102,27 @@ export function RevenuePlanDonut({ planCounts, formatPlanName }: RevenuePlanDonu
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "32px" }}>
-      <ResponsiveContainer width={160} height={160}>
-        <PieChart>
-          <Pie
-            data={chartData}
-            cx="50%"
-            cy="50%"
-            innerRadius={45}
-            outerRadius={70}
-            paddingAngle={2}
-            dataKey="value"
-            stroke="none"
-          >
-            {chartData.map((_, i) => (
-              <Cell key={i} fill={GOLD_SCALE[i % GOLD_SCALE.length]} />
-            ))}
-          </Pie>
-          <Tooltip content={<CustomTooltip />} />
-        </PieChart>
-      </ResponsiveContainer>
+      <div style={{ width: "160px", height: "160px", flexShrink: 0 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={chartData}
+              cx="50%"
+              cy="50%"
+              innerRadius={45}
+              outerRadius={70}
+              paddingAngle={2}
+              dataKey="value"
+              stroke="none"
+            >
+              {chartData.map((_, i) => (
+                <Cell key={i} fill={GOLD_SCALE[i % GOLD_SCALE.length]} />
+              ))}
+            </Pie>
+            <Tooltip content={<CustomTooltip />} />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
         {chartData.map((d, i) => (
           <div key={d.name} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
