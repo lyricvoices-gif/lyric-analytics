@@ -11,6 +11,7 @@ import { PlanDonut, RevenuePlanDonut } from "./PlanDonut"
 import { VoiceBarChart } from "./VoiceBarChart"
 import { TrialFunnelChart, IntentBarChart, VoiceAffinityBarChart } from "./FunnelChart"
 import { GenomeBarChart, UseCaseHeatmap } from "./GenomeChart"
+import { ErrorBoundary } from "./ErrorBoundary"
 
 // ── Design tokens (dark-first) ──────────────────────────────────────────────────
 
@@ -374,10 +375,11 @@ function RevenueTab({ data }: { data: DashboardData }) {
   const { stripe, clerk } = data
 
   function eventLabel(type: string): string {
-    return type.replace("customer.subscription.", "").replace(/_/g, " ")
+    return (type ?? "").replace("customer.subscription.", "").replace(/_/g, " ")
   }
 
   function eventColor(type: string): string {
+    if (!type) return C.muted
     if (type.includes("deleted")) return C.error
     if (type.includes("created")) return C.good
     return C.muted
@@ -387,58 +389,72 @@ function RevenueTab({ data }: { data: DashboardData }) {
     <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
       {/* MRR hero + subs */}
       <div style={{ display: "grid", gridTemplateColumns: "1.8fr 1fr 1fr", gap: "12px" }}>
-        <StatCard label="MRR" value={fmtMoney(stripe.mrr)} display accent glow />
-        <StatCard label="Active Subscriptions" value={fmtNum(stripe.active_subscriptions)} />
-        <StatCard label="Revenue Last 30d" value={fmtMoney(stripe.revenue_last_30d)} />
+        <StatCard label="MRR" value={fmtMoney(stripe?.mrr)} display accent glow />
+        <StatCard label="Active Subscriptions" value={fmtNum(stripe?.active_subscriptions)} />
+        <StatCard label="Revenue Last 30d" value={fmtMoney(stripe?.revenue_last_30d)} />
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
         {/* Plan distribution donut */}
-        {stripe.plan_counts && Object.keys(stripe.plan_counts).length > 0 && (
+        {stripe?.plan_counts && Object.keys(stripe.plan_counts).length > 0 && (
           <Panel>
             <Label>Active by plan</Label>
-            <RevenuePlanDonut planCounts={stripe.plan_counts} formatPlanName={formatPlanName} />
+            <ErrorBoundary>
+              <RevenuePlanDonut planCounts={stripe.plan_counts} formatPlanName={formatPlanName} />
+            </ErrorBoundary>
           </Panel>
         )}
 
         {/* Subscription events timeline */}
-        {stripe.recent_events && stripe.recent_events.length > 0 && (
+        {stripe?.recent_events && stripe.recent_events.length > 0 && (
           <Panel>
             <Label>Recent subscription events</Label>
             <div style={{ display: "flex", flexDirection: "column", gap: "0" }}>
-              {stripe.recent_events.slice(0, 8).map((ev, i) => (
-                <div key={i} style={{
-                  display: "flex", alignItems: "center", gap: "12px",
-                  padding: "12px 0",
-                  borderBottom: i < 7 ? `1px solid ${C.faint}` : "none",
-                }}>
-                  {/* Colored dot */}
-                  <div style={{
-                    width: "8px", height: "8px", borderRadius: "50%",
-                    background: eventColor(ev.type),
-                    flexShrink: 0,
-                    boxShadow: ev.type.includes("created") ? `0 0 8px rgba(74,124,89,0.4)` : ev.type.includes("deleted") ? `0 0 8px rgba(181,74,46,0.3)` : "none",
-                  }} />
-                  <span style={{
-                    fontSize: "13px", fontWeight: 500, flex: 1,
-                    color: C.text,
-                    fontFamily: "'Agrandir', sans-serif",
-                    textTransform: "capitalize",
+              {stripe.recent_events.slice(0, 8).map((ev, i) => {
+                if (!ev) return null
+                return (
+                  <div key={i} style={{
+                    display: "flex", alignItems: "center", gap: "12px",
+                    padding: "12px 0",
+                    borderBottom: i < 7 ? `1px solid ${C.faint}` : "none",
                   }}>
-                    {eventLabel(ev.type)}
-                  </span>
-                  <span style={{ fontSize: "11px", color: C.muted, fontFamily: "'Agrandir Narrow', sans-serif" }}>
-                    {timeAgo(ev.created)}
-                  </span>
-                </div>
-              ))}
+                    {/* Colored dot */}
+                    <div style={{
+                      width: "8px", height: "8px", borderRadius: "50%",
+                      background: eventColor(ev.type),
+                      flexShrink: 0,
+                      boxShadow: ev.type?.includes("created") ? `0 0 8px rgba(74,124,89,0.4)` : ev.type?.includes("deleted") ? `0 0 8px rgba(181,74,46,0.3)` : "none",
+                    }} />
+                    <span style={{
+                      fontSize: "13px", fontWeight: 500, flex: 1,
+                      color: C.text,
+                      fontFamily: "'Agrandir', sans-serif",
+                      textTransform: "capitalize",
+                    }}>
+                      {eventLabel(ev.type)}
+                    </span>
+                    <span style={{ fontSize: "11px", color: C.muted, fontFamily: "'Agrandir Narrow', sans-serif" }}>
+                      {ev.created ? timeAgo(ev.created) : ""}
+                    </span>
+                  </div>
+                )
+              })}
             </div>
           </Panel>
         )}
       </div>
 
+      {/* Stripe error note */}
+      {stripe?.error && (
+        <div style={{ padding: "4px 0" }}>
+          <p style={{ fontSize: "11px", color: C.muted, fontStyle: "italic" }}>
+            Note: Some Stripe data may be incomplete — {stripe.error}
+          </p>
+        </div>
+      )}
+
       {/* Clerk users */}
-      {!clerk.error && (
+      {clerk && !clerk.error && (
         <Panel>
           <Label>Users · Clerk</Label>
           <div style={{ display: "flex", gap: "48px", alignItems: "flex-end", marginBottom: "28px" }}>
@@ -670,7 +686,7 @@ function DashboardInner({ data, range }: { data: DashboardData; range: number })
         {activeTab === "Overview"     && <OverviewTab data={data} range={range} />}
         {activeTab === "Voices"       && <VoicesTab data={data} />}
         {activeTab === "Trial"        && <TrialTab data={data} />}
-        {activeTab === "Revenue"      && <RevenueTab data={data} />}
+        {activeTab === "Revenue"      && <ErrorBoundary><RevenueTab data={data} /></ErrorBoundary>}
         {activeTab === "Voice Genome" && <VoiceGenomeTab data={data} />}
       </div>
     </div>
