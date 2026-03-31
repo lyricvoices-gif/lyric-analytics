@@ -373,10 +373,6 @@ function TrialTab({ data }: { data: DashboardData }) {
 function RevenueTab({ data }: { data: DashboardData }) {
   const { stripe, clerk } = data
 
-  if (stripe.error) {
-    return <Panel><p style={{ fontSize: "13px", color: C.error }}>{stripe.error}</p></Panel>
-  }
-
   function eventLabel(type: string): string {
     return type.replace("customer.subscription.", "").replace(/_/g, " ")
   }
