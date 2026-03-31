@@ -664,7 +664,7 @@ function DashboardInner({ data, range }: { data: DashboardData; range: number })
               color: C.gold,
               lineHeight: 1,
             }}>
-              Lyric
+              lyric
             </span>
             <span style={{
               fontFamily: "'PP Editorial New', Georgia, serif",
@@ -675,7 +675,7 @@ function DashboardInner({ data, range }: { data: DashboardData; range: number })
               marginLeft: "8px",
               opacity: 0.7,
             }}>
-              Analytics
+              analytics
             </span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
