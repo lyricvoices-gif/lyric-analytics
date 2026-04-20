@@ -67,7 +67,7 @@ export interface DashboardData {
     p50_ms: number
     p95_ms: number
   }
-  clerk: {
+  users: {
     total_users?: number
     new_users_last_30d?: number
     plan_distribution?: Record<string, number>
@@ -85,6 +85,37 @@ export interface DashboardData {
     funnel?: TrialFunnelRow
     intent_breakdown?: IntentBreakdownRow[]
     voice_affinity?: VoiceAffinityRow[]
+    error?: string
+  }
+  observability?: {
+    errors?: {
+      totals?: {
+        total_errors: number
+        affected_users: number
+        worker_fetch_errors: number
+        worker_status_errors: number
+      }
+      daily?: Array<{ date: string; errors: number }>
+    }
+    checkout_funnel?: {
+      started: number
+      completed: number
+      completion_rate: number | null
+    } | null
+    active_users?: {
+      dau: number
+      wau: number
+      mau: number
+    } | null
+    active_users_daily?: Array<{ date: string; active_users: number }>
+    onboarding_funnel?: {
+      step_1: number
+      step_2: number
+      step_3: number
+      step_4: number
+      step_5: number
+      completed: number
+    } | null
     error?: string
   }
   genome?: {

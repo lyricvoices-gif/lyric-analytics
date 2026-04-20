@@ -86,7 +86,7 @@ components/
 - Stat cards: MRR (gold display), Active Subscriptions, Revenue Last 30d
 - Active by plan (Stripe plan_counts — mapped from price IDs to plan names)
 - Recent subscription events (last 8)
-- Users · Clerk (total users, +last 30d, plan distribution bar + legend)
+- Users (total users, +last 30d, plan distribution bar + legend — sourced from Supabase)
 
 ### Voice Genome
 - Download & regeneration rate by voice table
@@ -127,7 +127,7 @@ function formatPlanName(planId: string): string
 ## Environment Variables
 
 ```
-COMPOSER_API_URL=https://composer.lyricvoices.com
+COMPOSER_API_URL=https://composer.lyricvoices.ai
 ANALYTICS_SECRET=<shared secret — must match lyric-composer>
 ```
 

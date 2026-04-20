@@ -6,7 +6,7 @@ interface PageProps {
 }
 
 async function fetchDashboard(range: number): Promise<DashboardData | null> {
-  const base = process.env.COMPOSER_API_URL ?? "https://composer.lyricvoices.com"
+  const base = process.env.COMPOSER_API_URL ?? "https://composer.lyricvoices.ai"
   const secret = process.env.ANALYTICS_SECRET ?? ""
   try {
     const res = await fetch(`${base}/api/analytics/dashboard?range=${range}`, {

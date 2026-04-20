@@ -12,6 +12,7 @@ import { VoiceBarChart } from "./VoiceBarChart"
 import { TrialFunnelChart, IntentBarChart, VoiceAffinityBarChart } from "./FunnelChart"
 import { GenomeBarChart, UseCaseHeatmap } from "./GenomeChart"
 import { ErrorBoundary } from "./ErrorBoundary"
+import { ErrorTrendChart, DAUChart, OnboardingFunnelChart, CheckoutFunnelChart } from "./HealthCharts"
 
 // ── Design tokens (dark-first) ──────────────────────────────────────────────────
 
@@ -208,7 +209,7 @@ function RangeToggle({ current }: { current: number }) {
 
 // ── Tab nav ───────────────────────────────────────────────────────────────────────
 
-const TABS = ["Overview", "Voices", "Trial", "Revenue", "Voice Genome"] as const
+const TABS = ["Overview", "Voices", "Trial", "Revenue", "Voice Genome", "Health"] as const
 type Tab = typeof TABS[number]
 
 function TabNav({ active, onChange }: { active: Tab; onChange: (t: Tab) => void }) {
@@ -372,7 +373,7 @@ function TrialTab({ data }: { data: DashboardData }) {
 // ── Revenue tab ───────────────────────────────────────────────────────────────────
 
 function RevenueTab({ data }: { data: DashboardData }) {
-  const { stripe, clerk } = data
+  const { stripe, users } = data
 
   function eventLabel(type: string): string {
     return (type ?? "").replace("customer.subscription.", "").replace(/_/g, " ")
@@ -453,10 +454,10 @@ function RevenueTab({ data }: { data: DashboardData }) {
         </div>
       )}
 
-      {/* Clerk users */}
-      {clerk && !clerk.error && (
+      {/* Users (Supabase) */}
+      {users && !users.error && (
         <Panel>
-          <Label>Users · Clerk</Label>
+          <Label>Users</Label>
           <div style={{ display: "flex", gap: "48px", alignItems: "flex-end", marginBottom: "28px" }}>
             <div>
               <p style={{
@@ -465,7 +466,7 @@ function RevenueTab({ data }: { data: DashboardData }) {
                 fontVariantNumeric: "lining-nums tabular-nums",
                 color: C.text, margin: "0 0 4px", lineHeight: 1,
               }}>
-                {fmtNum(clerk.total_users)}
+                {fmtNum(users.total_users)}
               </p>
               <p style={{ fontSize: "12px", color: C.muted, margin: 0, fontFamily: "'Agrandir Narrow', sans-serif" }}>total users</p>
             </div>
@@ -475,14 +476,14 @@ function RevenueTab({ data }: { data: DashboardData }) {
                 color: C.good, margin: "0 0 4px", lineHeight: 1,
                 fontFamily: "'Agrandir', sans-serif",
               }}>
-                +{fmtNum(clerk.new_users_last_30d)}
+                +{fmtNum(users.new_users_last_30d)}
               </p>
               <p style={{ fontSize: "12px", color: C.muted, margin: 0, fontFamily: "'Agrandir Narrow', sans-serif" }}>last 30d</p>
             </div>
           </div>
 
-          {clerk.plan_distribution && (() => {
-            const dist = clerk.plan_distribution!
+          {users.plan_distribution && (() => {
+            const dist = users.plan_distribution!
             const total = Object.values(dist).reduce((a, b) => a + b, 0) || 1
             const planOrder = ["enterprise", "studio", "creator", "unknown"]
             const planColor: Record<string, string> = {
@@ -609,6 +610,85 @@ function VoiceGenomeTab({ data }: { data: DashboardData }) {
   )
 }
 
+// ── Health tab ────────────────────────────────────────────────────────────────────
+
+function HealthTab({ data }: { data: DashboardData }) {
+  const o = data.observability
+  if (!o || o.error) {
+    return (
+      <Panel>
+        <p style={{ fontSize: "13px", color: C.muted }}>
+          {o?.error ?? "No observability data yet — data will appear after the first event."}
+        </p>
+      </Panel>
+    )
+  }
+
+  const errTotals = o.errors?.totals
+  const active = o.active_users
+  const onboarding = o.onboarding_funnel
+  const checkout = o.checkout_funnel
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+      {/* Generation errors */}
+      <SectionHeader>Generation errors</SectionHeader>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px" }}>
+        <StatCard
+          label="Total Errors"
+          value={fmtNum(errTotals?.total_errors)}
+          accent={!!errTotals?.total_errors && errTotals.total_errors > 0}
+        />
+        <StatCard label="Affected Users" value={fmtNum(errTotals?.affected_users)} />
+        <StatCard label="Worker Unreachable" value={fmtNum(errTotals?.worker_fetch_errors)} />
+        <StatCard label="Worker Non-OK" value={fmtNum(errTotals?.worker_status_errors)} />
+      </div>
+      <Panel>
+        <Label>Errors · daily</Label>
+        <ErrorTrendChart data={o.errors?.daily ?? []} />
+      </Panel>
+
+      {/* Active users */}
+      <SectionHeader>Active users</SectionHeader>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "12px" }}>
+        <StatCard label="DAU" value={fmtNum(active?.dau)} accent glow />
+        <StatCard label="WAU" value={fmtNum(active?.wau)} />
+        <StatCard label="MAU" value={fmtNum(active?.mau)} />
+      </div>
+      <Panel>
+        <Label>Daily active users</Label>
+        <DAUChart data={o.active_users_daily ?? []} />
+      </Panel>
+
+      {/* Checkout funnel */}
+      <SectionHeader>Checkout funnel</SectionHeader>
+      {checkout ? (
+        <Panel>
+          <Label>Last 30 days</Label>
+          <CheckoutFunnelChart data={checkout} />
+        </Panel>
+      ) : (
+        <Panel>
+          <p style={{ fontSize: "13px", color: C.muted, margin: 0 }}>No checkout activity yet.</p>
+        </Panel>
+      )}
+
+      {/* Onboarding funnel (first-time only) */}
+      <SectionHeader>First-time onboarding</SectionHeader>
+      {onboarding ? (
+        <Panel>
+          <Label>Step drop-off · first-time users</Label>
+          <OnboardingFunnelChart data={onboarding} />
+        </Panel>
+      ) : (
+        <Panel>
+          <p style={{ fontSize: "13px", color: C.muted, margin: 0 }}>No onboarding data yet.</p>
+        </Panel>
+      )}
+    </div>
+  )
+}
+
 // ── Error state ───────────────────────────────────────────────────────────────────
 
 function ErrorState() {
@@ -694,6 +774,7 @@ function DashboardInner({ data, range }: { data: DashboardData; range: number })
         {activeTab === "Trial"        && <TrialTab data={data} />}
         {activeTab === "Revenue"      && <ErrorBoundary><RevenueTab data={data} /></ErrorBoundary>}
         {activeTab === "Voice Genome" && <VoiceGenomeTab data={data} />}
+        {activeTab === "Health"       && <ErrorBoundary><HealthTab data={data} /></ErrorBoundary>}
       </div>
     </div>
   )
