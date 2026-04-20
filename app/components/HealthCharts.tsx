@@ -104,7 +104,7 @@ export function OnboardingFunnelChart({ data }: { data: OnboardingFunnelProps })
   const max = Math.max(...rows.map((r) => r.value), 1)
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
       {rows.map((row, i) => {
         const pct = (row.value / max) * 100
         const isLast = i === rows.length - 1
@@ -147,7 +147,7 @@ export function CheckoutFunnelChart({ data }: { data: CheckoutFunnelProps }) {
   const completedPct = data.started ? ((data.completed ?? 0) / data.started) * 100 : 0
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
       <div>
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", marginBottom: "4px" }}>
           <span style={{ color: TEXT, fontFamily: "'Agrandir', sans-serif" }}>Checkout started</span>
